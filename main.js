@@ -1092,7 +1092,8 @@ function generatePrecipitation() {
         const isPassable = cells.h[current + next] <= MAX_PASSABLE_ELEVATION;
         const precipitation = isPassable ? getPrecipitation(humidity, current, next) : humidity;
         cells.prec[current] += precipitation;
-        const evaporation = precipitation > 1.5 ? 1 : 0; // some humidity evaporates back to the atmosphere
+        const cellFactor = 1 + Math.log(grid.cellsDesired/10000) * 0.2;  // cell precipitation factor (small cells pass more humidity so that rain does not exhaust too fast when using a denser grid)
+        const evaporation = precipitation * Math.max(0.06*cells.temp[current]*cellFactor, 0.1);  // evaporation depends on temperature as well
         humidity = isPassable ? minmax(humidity - precipitation + evaporation, 0, maxPrec) : 0;
       }
     }
